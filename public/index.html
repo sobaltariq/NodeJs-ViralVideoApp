@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add YouTube Video</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 2rem 0;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 0.5rem;
+      }
+
+      form {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 16px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Add YouTube Video</h1>
+    <form action="/add-video" method="post">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" required /><br />
+
+      <label for="videoId">Video Id:</label>
+      <input type="text" id="videoId" name="videoId" required /><br />
+
+      <label for="url">URL:</label>
+      <input type="text" id="url" name="url" required /><br />
+
+      <label for="category">Category:</label>
+      <input type="text" id="category" name="category" required /><br />
+
+      <label for="countries">Countries:</label>
+      <input type="text" id="countries" name="countries" required /><br />
+
+      <button type="submit">Add Video</button>
+    </form>
+  </body>
+</html>

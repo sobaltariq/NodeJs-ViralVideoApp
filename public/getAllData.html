@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Data</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      #data-container {
+        margin: 0 5%;
+      }
+
+      ul {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        list-style: none;
+        gap: 1rem;
+        padding: 0;
+        margin: 1rem 0;
+      }
+
+      .data-entry {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ff0000;
+        border-radius: 5px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      li .all-data {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 60%;
+      }
+
+      li > .img {
+        margin: 0;
+        height: auto;
+        width: 200px;
+        max-width: 100%;
+      }
+
+      .thumbnail {
+        margin-right: 10px;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      p > a {
+        text-decoration: none;
+        color: #4caf50;
+      }
+
+      .all-data > .btn {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .delete-btn {
+        background-color: #ff0000;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      .edit-btn {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      #search-container {
+        margin: 1rem 5%;
+      }
+
+      #search-input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1 style="text-align: center; padding: 1rem 0">YouTube Data</h1>
+
+    <div id="search-container">
+      <label for="search-input">Search by Title:</label>
+      <input
+        type="text"
+        id="search-input"
+        name="search-input"
+        placeholder="Enter title to search"
+        oninput="searchData()"
+      />
+    </div>
+
+    <div id="data-container"></div>
+
+    <script>
+      // Replace 'your-api-key' with your actual API key
+      const apiKey = "your-api-key";
+      let allData = []; // Store fetched data globally
+
+      // Function to fetch data from the server with API key
+      async function fetchData() {
+        try {
+          const response = await fetch("/get", {
+            headers: {
+              "x-api-key": apiKey,
+            },
+          });
+          const data = await response.json();
+
+          if (response.ok) {
+            allData = data.data; // Update global data
+            displayData(allData);
+          } else {
+            console.error("Error fetching data:", data.error);
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error.message);
+        }
+      }
+
+      // Function to display data on the page
+      function displayData(entries) {
+        const container = document.getElementById("data-container");
+
+        if (entries.length === 0) {
+          container.innerHTML = "<p>No data available.</p>";
+        } else {
+          const ul = document.createElement("ul");
+          entries.forEach((entry) => {
+            const li = document.createElement("li");
+            li.className = "data-entry";
+            li.innerHTML = `
+            <div class="img">
+              <img class="thumbnail" src="https://i.ytimg.com/vi/${entry.videoId}/hqdefault.jpg" alt="${entry.videoId}">
+            </div>
+            <div class="all-data">
+              <h3><strong>Title:</strong> ${entry.title}</h3>
+              <p><strong>Video ID:</strong> ${entry.videoId}</p> 
+              <p><strong>URL: </strong><a href="${entry.url}">${entry.url}</a></p>
+              <p><strong>Category:</strong> ${entry.category} </p>
+              <p><strong>Countries:</strong> ${entry.countries}</p>
+              <div class="btn">
+                <button class="edit-btn" onclick="navigateToEditPage('${entry._id}', '${entry.title}', '${entry.videoId}', '${entry.url}', '${entry.category}', '${entry.countries}')">Edit</button>
+                <button class="delete-btn" onclick="deleteEntryWithConfirmation('${entry._id} ${entry.title} ${entry.url}')">Delete</button>
+              </div>
+            </div>`;
+
+            ul.appendChild(li);
+          });
+          container.innerHTML = ""; // Clear previous content
+          container.appendChild(ul);
+        }
+      }
+
+      // Function to search data by title
+      function searchData() {
+        const searchInput = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+        const filteredData = allData.filter((entry) =>
+          entry.title.toLowerCase().includes(searchInput)
+        );
+        displayData(filteredData);
+      }
+
+      // Function to navigate to the edit page and save data in local storage
+      function navigateToEditPage(
+        entryId,
+        title,
+        videoId,
+        url,
+        category,
+        countries
+      ) {
+        // Get the entry details you want to pass
+        const entry = {
+          title,
+          videoId,
+          url,
+          category,
+          countries,
+        };
+
+        // Save the entry data in local storage
+        localStorage.setItem("editEntryData", JSON.stringify(entry));
+
+        // Redirect to the edit page
+        window.open(`/edit-one/${entryId}`, "_blank");
+      }
+
+      // Function to delete an entry with confirmation
+      function deleteEntryWithConfirmation(entryInfo) {
+        const [entryId, entryTitle, entryUrl] = entryInfo.split(" ");
+        const isConfirmed = confirm(
+          `Are you sure you want to delete the video with title "${entryTitle}" and Url "${entryUrl}"?`
+        );
+
+        if (isConfirmed) {
+          deleteEntry(entryId);
+        }
+      }
+
+      // Function to delete an entry
+      async function deleteEntry(entryId) {
+        try {
+          const response = await fetch(`/delete/${entryId}`, {
+            method: "DELETE",
+            headers: {
+              "x-api-key": apiKey,
+            },
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            console.log("Entry deleted successfully");
+            fetchData(); // Refresh data after deletion
+          } else {
+            console.error("Error deleting entry:", data.message);
+          }
+        } catch (error) {
+          console.error("Error deleting entry:", error.message);
+        }
+      }
+
+      // Fetch data when the page loads
+      window.onload = fetchData;
+    </script>
+  </body>
+</html>
